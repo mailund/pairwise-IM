@@ -7,6 +7,7 @@ my $pop1size = 1;
 my $pop2size = 2;
 my $m12 = 0.1;
 my $m21 = 0.2;
+
 my $change = 0.5;
 my $m12t = 0.4;
 my $m21t = 0.8;
@@ -14,12 +15,12 @@ my $pop1size2 = 2;
 my $pop2size2 = 1;
 
 # no change...
-my $m12t = 0.2;
-my $m21t = 0.2;
-my $pop1size2 = 1;
-my $pop2size2 = 2;
+#my $m12t = 0.2;
+#my $m21t = 0.2;
+#my $pop1size2 = 1;
+#my $pop2size2 = 2;
 
-my $repeats = 100;
+my $repeats = 500;
 
 my $sample_conf;
 my $mscmd;
