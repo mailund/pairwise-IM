@@ -21,7 +21,7 @@ class Likelihood:
         self.loci_02_likelihoods = [l.likelihood(ts) for l in self.loci_02]
         
     def log_likelihood(self, c1s, c2s, m12s, m21s):
-        model = IMSystem(ts, c1s, c2s, m12s, m21s)
+        model = IMSystem(self.ts, c1s, c2s, m12s, m21s)
         pdm_20,pdm_11,pdm_02 = model.coalescence_distribution()
 
         logL = 0.0
@@ -37,7 +37,7 @@ class Likelihood:
 
 if __name__ == '__main__':
     from scipy import linspace
-    ts = linspace(0.1,4, num=5)
+    ts = linspace(0.1,4)
 
     c1s = [1] * len(ts)
     c2s = [2] * len(ts)
