@@ -45,46 +45,51 @@ class IMSystem:
         
         self.Qs = [make_rate_matrix(self.c1s[i],self.c2s[i],self.m12s[i],self.m21s[i])
                    for i in xrange(self.no_intervals)]
+                   
         self.Ps = [None] * self.no_intervals
         self.Ps[0] = matrix(expm(self.Qs[0] * self.ts[0]))
         for i in xrange(1,self.no_intervals):
-            self.Ps[i] = matrix(expm(self.Qs[i] * (self.ts[i]-self.ts[i-1])))
+            self.Ps[i] = self.Ps[i-1] * matrix(expm(self.Qs[i] * (self.ts[i]-self.ts[i-1])))
 
     def coalescence_distribution(self):
         '''Returns the (discritized) coalescence distribution for the time
         intervals. Implicitly the time interval from the last ts till infinity
         is assumed to carry the probability mass that gets this to sum to 1.'''
-        pdm_20 = [0] * self.no_intervals
-        pdm_11 = [0] * self.no_intervals
-        pdm_02 = [0] * self.no_intervals
+        pdm_20 = [0] * (self.no_intervals + 1)
+        pdm_11 = [0] * (self.no_intervals + 1)
+        pdm_02 = [0] * (self.no_intervals + 1)
         
         pdm_20[0] = self.Ps[0][LINEAGES_IN_POP_1,COALESCED]
         pdm_11[0] = self.Ps[0][LINEAGES_IN_SEP_POPS,COALESCED]
         pdm_02[0] = self.Ps[0][LINEAGES_IN_POP_2,COALESCED]
-        prevP = self.Ps[0]
         
-        for i in xrange(self.no_intervals):
-            for state in NOT_COALESCED:
-                pdm_20[i] += prevP[LINEAGES_IN_POP_1,state] * self.Ps[i][state,COALESCED]
-                pdm_11[i] += prevP[LINEAGES_IN_SEP_POPS,state] * self.Ps[i][state,COALESCED]
-                pdm_02[i] += prevP[LINEAGES_IN_POP_2,state] * self.Ps[i][state,COALESCED]
-                prevP = prevP * self.Ps[i]
-                
+        for i in xrange(1,self.no_intervals):
+            P1 = self.Ps[i-1]
+            P2 = self.Ps[i]
+            pdm_20[i] = P2[LINEAGES_IN_POP_1,COALESCED]    - P1[LINEAGES_IN_POP_1,COALESCED]
+            pdm_11[i] = P2[LINEAGES_IN_SEP_POPS,COALESCED] - P1[LINEAGES_IN_SEP_POPS,COALESCED]
+            pdm_02[i] = P2[LINEAGES_IN_POP_2,COALESCED]    - P1[LINEAGES_IN_POP_2,COALESCED]
+        
+        pdm_20[-1] = 1 - sum(pdm_20)
+        pdm_11[-1] = 1 - sum(pdm_11)
+        pdm_02[-1] = 1 - sum(pdm_02)
+        
         return (pdm_20,pdm_11,pdm_02)
 
-from scipy import linspace
-ts = linspace(0.1,4)
-c1s = [1] * len(ts)
-c2s = [2] * len(ts)
-m12s = [0.1] * len(ts)
-m21s = [0.1] * len(ts)
+if __name__ == '__main__':
+    from scipy import linspace
+    ts = linspace(0.1,4)
+    c1s = [1] * len(ts)
+    c2s = [2] * len(ts)
+    m12s = [0.0] * len(ts)
+    m21s = [0.0] * len(ts)
 
-im = IMSystem(ts, c1s, c2s, m12s, m21s)
-pdm_20,pdm_11,pdm_02 = im.coalescence_distribution()
+    im = IMSystem(ts, c1s, c2s, m12s, m21s)
+    pdm_20,pdm_11,pdm_02 = im.coalescence_distribution()
 
-from matplotlib import pyplot
-pyplot.plot(im.ts,pdm_20)
-pyplot.plot(im.ts,pdm_11)
-pyplot.plot(im.ts,pdm_02)
-pyplot.axis([0, max(ts), 0, max([max(pdm_20),max(pdm_11),max(pdm_02)])])
-pyplot.show()
+    from matplotlib import pyplot
+    pyplot.plot(im.ts,pdm_20[0:-1])
+    pyplot.plot(im.ts,pdm_11[0:-1])
+    pyplot.plot(im.ts,pdm_02[0:-1])
+    pyplot.axis([0, max(ts), 0, max([max(pdm_20),max(pdm_11),max(pdm_02)])])
+    pyplot.show()
