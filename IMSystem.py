@@ -24,7 +24,7 @@ def make_rate_matrix(c1, c2, m12, m21):
         ])
     return Q
 
-class IMSystem:
+class IMSystem(object):
     '''Wrapping a two-population isolation-with-migration system.'''
     
     def __init__(self, ts, c1s, c2s, m12s, m21s):
