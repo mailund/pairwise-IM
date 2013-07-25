@@ -1,0 +1,3 @@
+*.pyc
+simulations/coal.*.txt
+simulations/seedms
